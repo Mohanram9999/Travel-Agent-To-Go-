@@ -104,7 +104,8 @@ h2:empty{display:none}
 .ask button{border:0;border-radius:10px;background:var(--accent);color:var(--on-accent);font:700 15px Figtree,sans-serif;padding:0 18px;min-height:44px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.guide *,.mic.on{animation:none!important}}
 </style>
-  <body>
+</head>
+<body>
 <div class="app">
   <header>
     <div class="brand">Marga<span>.</span></div>
@@ -173,4 +174,81 @@ h2:empty{display:none}
     </form>
   </section>
 </div>
-</head>
+
+<script>
+(function(){
+  var N={
+    eat:{t:'Eat now',s:['Getting your location','Searching Google Maps: open now','Reading recent reviews','Ranking by distance and rating'],n:'Sample: Local kitchen',d:'4 min walk, closes 10:30 pm',g:['4.6 rating','Veg options','Budget']},
+    wc:{t:'Closest restroom',s:['Getting your location','Searching Google Maps: restrooms','Checking open hours'],n:'Sample: Bus station restroom',d:'3 min walk, open 24 hours',g:['3.9 rating','Paid entry']},
+    atm:{t:'Cash / ATM',s:['Getting your location','Searching Google Maps: ATMs','Checking reviews for outages'],n:'Sample: Bank ATM',d:'6 min walk, reported working',g:['4.1 rating','24 hours']},
+    med:{t:'Pharmacy or clinic',s:['Getting your location','Searching Google Maps: pharmacy','Finding phone number'],n:'Sample: City pharmacy',d:'5 min walk, open until 11 pm',g:['4.4 rating','Open now']},
+    go:{t:'Get me back',s:['Getting your location','Looking up your stay','Fetching Maps directions'],n:'Sample: 18 min by auto',d:'Or 35 min on the local bus',g:['Fastest: auto','About 120 rupees']},
+    lens:{t:'What is this?',s:['Waiting for your photo','Sending it to Google Lens','Matching landmark and text'],n:'Sample: Photo identified',d:'Name, history and hours appear here',g:['Landmark','Translate text']},
+    events:{t:'On tonight',s:['Getting your location','Searching Google Events','Sorting by start time'],n:'Sample: Live music, 7:30 pm',d:'1.2 km away, free entry',g:['Tonight','Free']},
+    help:{t:'Help and safety',s:['Getting your location','Searching hospitals and police','Finding phone numbers'],n:'Sample: Government hospital',d:'2.1 km away, emergency ward open',g:['Open 24 hours','Emergency']}
+  };
+  var API='PASTE_YOUR_RENDER_URL_HERE',pos=null,cur=null;
+  var $=function(i){return document.getElementById(i)},busy=false,sleep=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+
+  [].forEach.call(document.querySelectorAll('.tabs button'),function(b){
+    b.addEventListener('click',function(){
+      [].forEach.call(document.querySelectorAll('.tabs button'),function(x){x.setAttribute('aria-selected',x===b)});
+      [].forEach.call(document.querySelectorAll('.panel'),function(p){p.classList.toggle('on',p.id===b.dataset.p)});
+    });
+  });
+
+  $('loc').addEventListener('click',function(){
+    $('locText').textContent='Locating...';
+    var fail=function(){$('locText').textContent='Say your area in chat';$('loc').classList.remove('ok')};
+    try{navigator.geolocation.getCurrentPosition(function(p){pos={lat:p.coords.latitude,lng:p.coords.longitude};$('locText').textContent='Location on';$('loc').classList.add('ok')},fail,{timeout:6000})}catch(e){fail()}
+  });
+
+  function getPos(){return new Promise(function(res){
+    if(pos)return res(pos);
+    try{navigator.geolocation.getCurrentPosition(function(p){pos={lat:p.coords.latitude,lng:p.coords.longitude};res(pos)},function(){res(null)},{timeout:8000})}catch(e){res(null)}
+  })}
+  async function live(spec,heard){
+    if(API.indexOf('http')!==0)return null;
+    try{
+      var p=await getPos();if(!p)return {error:'Turn on location to get real results.'};
+      var need=Object.keys(N).find(function(k){return N[k]===spec})||'';
+      var r=await fetch(API.replace(/\/$/,'')+'/api/assist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({need:need,text:heard||'',lat:p.lat,lng:p.lng})});
+      return await r.json();
+    }catch(e){return {error:'Could not reach the agent. Try again in a minute.'}}
+  }
+  document.querySelector('.actions').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b||!cur)return;
+    var i=[].indexOf.call(this.children,b);
+    if(i===0&&cur.link)window.open(cur.link,'_blank');
+    if(i===1&&cur.phone)location.href='tel:'+cur.phone.replace(/\s/g,'');
+  });
+
+  async function run(spec,heard){
+    if(busy)return;busy=true;
+    var g=$('guide'),st=$('stage'),bb=$('bubble'),steps=$('steps'),res=$('result');
+    $('outTitle').textContent=spec.t;steps.innerHTML='';steps.classList.remove('gone');res.classList.remove('show');$('note').textContent='';
+    spec.s.forEach(function(s){var li=document.createElement('li');li.innerHTML='<span class="dot"></span>'+s;steps.appendChild(li)});
+    $('again').style.display='none';st.classList.remove('gone');var lp=live(spec,heard);
+    if(!heard){g.setAttribute('class','guide reset');void g.getBoundingClientRect()}
+    g.setAttribute('class','guide in wave');
+    bb.textContent=heard?'I heard: "'+heard.slice(0,60)+'". On it!':'Hi! Let me check that for you.';bb.classList.add('show');
+    await sleep(1500);
+    g.setAttribute('class','guide in dance');bb.textContent='Searching live. Hang on...';
+    var lis=[].slice.call(steps.children);
+    for(var i=0;i<lis.length;i++){lis[i].className='run';await sleep(800);lis[i].className='done'}
+    var d=await lp,ok=!!(d&&!d.error&&!d.unsupported);cur=ok?d:null;
+    if(ok)spec=Object.assign({},spec,{n:d.name,d:d.detail,g:d.tags});
+    else if(d&&d.error)spec=Object.assign({},spec,{n:'Could not get live results',d:d.error,g:['Demo mode']});
+    g.setAttribute('class','guide in present');
+    bb.textContent='';var sn=document.createElement('strong');sn.textContent=spec.n;bb.appendChild(sn);bb.appendChild(document.createElement('br'));bb.appendChild(document.createTextNode(spec.d));
+    steps.classList.add('gone');
+    $('rName').textContent=spec.n;$('rDetail').textContent=spec.d;
+    $('rTags').innerHTML='';spec.g.forEach(function(x){var e=document.createElement('span');e.textContent=x;$('rTags').appendChild(e)});
+    await sleep(3000);
+    bb.classList.remove('show');g.setAttribute('class','guide out walk');
+    await sleep(1300);st.classList.add('gone');
+    res.classList.add('show');$('again').style.display='block';
+    $('note').textContent=spec.t==='Help and safety'?'In an emergency, call your local emergency number first.'+(ok?'':' Demo result.'):(ok?'Live results from Google Maps via SerpApi.':'Demo result. Live SerpApi data comes after the backend is connected.');
+    busy=false;
+  }
+  $('grid').addEventListener('click',function(e){var b=e.target.closest('.tile');if(!b||b
