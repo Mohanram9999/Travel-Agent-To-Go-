@@ -104,4 +104,73 @@ h2:empty{display:none}
 .ask button{border:0;border-radius:10px;background:var(--accent);color:var(--on-accent);font:700 15px Figtree,sans-serif;padding:0 18px;min-height:44px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.guide *,.mic.on{animation:none!important}}
 </style>
+  <body>
+<div class="app">
+  <header>
+    <div class="brand">Marga<span>.</span></div>
+    <button class="loc" id="loc" type="button" aria-label="Set your location"><b></b><span id="locText">Set location</span></button>
+  </header>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab1" aria-selected="true" aria-controls="p1" data-p="p1">Main agent</button>
+    <button role="tab" id="tab2" aria-selected="false" aria-controls="p2" data-p="p2">Side chat</button>
+  </div>
+
+  <section class="panel on" id="p1" role="tabpanel" aria-labelledby="tab1">
+    <div class="scroller" id="scroller">
+      <div class="screen" id="s1">
+        <button class="lang" id="lang" type="button" aria-label="Voice language">EN</button>
+        <div class="stage" id="stage">
+          <div class="bubble show" id="bubble" aria-live="polite">Tap me and tell me what you need.</div>
+          <button class="agent" id="agent" type="button" aria-label="Tap to talk to Marga"><svg id="guide" class="guide in idle" viewBox="0 0 120 160" role="img" aria-label="Marga, your guide">
+          <g id="lL"><rect x="47" y="104" width="10" height="28" rx="5" fill="#2E7F86"/><ellipse cx="52" cy="134" rx="10" ry="5" fill="var(--accent)"/></g>
+          <g id="lR"><rect x="63" y="104" width="10" height="28" rx="5" fill="#2E7F86"/><ellipse cx="68" cy="134" rx="10" ry="5" fill="var(--accent)"/></g>
+          <g id="bd">
+            <g id="aL"><line x1="44" y1="72" x2="26" y2="94" stroke="var(--lagoon)" stroke-width="8" stroke-linecap="round"/><circle cx="24" cy="96" r="6" fill="var(--accent)"/></g>
+            <g id="aR"><line x1="76" y1="72" x2="94" y2="94" stroke="var(--lagoon)" stroke-width="8" stroke-linecap="round"/><circle cx="96" cy="96" r="6" fill="var(--accent)"/></g>
+            <rect x="42" y="64" width="36" height="46" rx="13" fill="var(--lagoon)"/>
+            <circle cx="60" cy="86" r="9" fill="var(--on-deep)"/><path d="M60 79 L63 86 L60 93 L57 86 Z" fill="var(--alert)"/>
+            <line x1="60" y1="22" x2="60" y2="10" stroke="var(--on-deep)" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="8" r="5.5" fill="var(--accent)"/>
+            <rect x="37" y="22" width="46" height="38" rx="13" fill="var(--on-deep)" stroke="var(--lagoon)" stroke-width="3"/>
+            <circle cx="50" cy="40" r="4.5" fill="var(--deep)"/><circle cx="70" cy="40" r="4.5" fill="var(--deep)"/>
+            <path d="M51 49 Q60 56 69 49" fill="none" stroke="var(--deep)" stroke-width="3" stroke-linecap="round"/>
+          </g>
+        </svg></button>
+        </div>
+        <h2 id="outTitle"></h2>
+        <ul class="steps gone" id="steps"></ul>
+        <div class="result" id="result">
+          <h3 id="rName"></h3><p id="rDetail"></p>
+          <div class="tags" id="rTags"></div>
+          <div class="actions"><button class="primary" type="button">Directions</button><button type="button">Call</button><button type="button">Next option</button></div>
+        </div>
+        <p class="note" id="note"></p>
+        <button class="again" id="again" type="button">Ask again</button>
+        <p class="hint">Swipe up for quick options &#8964;</p>
+      </div>
+      <div class="screen" id="s2">
+        <h2>Quick options</h2>
+        <div class="grid" id="grid">
+      <button class="tile" data-k="eat"><strong>Eat now</strong><small>Open now, near you</small></button>
+      <button class="tile" data-k="wc"><strong>Restroom</strong><small>Closest public option</small></button>
+      <button class="tile" data-k="atm"><strong>Cash / ATM</strong><small>Working, with ratings</small></button>
+      <button class="tile" data-k="med"><strong>Pharmacy or clinic</strong><small>Open, with phone</small></button>
+      <button class="tile" data-k="go"><strong>Get me back</strong><small>Route to your stay</small></button>
+      <button class="tile" data-k="lens"><strong>What is this?</strong><small>Photo of a place or sign</small></button>
+      <button class="tile" data-k="events"><strong>On tonight</strong><small>Events nearby</small></button>
+      <button class="tile help" data-k="help"><strong>Help and safety</strong><small>Hospitals, police</small></button>
+    </div>
+        <p class="hint">Swipe down to talk &#8963;</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p2" role="tabpanel" aria-labelledby="tab2">
+    <div class="msgs" id="msgs"><div class="msg bot">Hi, I'm your side chat. Ask me anything while the main agent handles your needs.</div></div>
+    <div class="quick"><button type="button">It's raining, what now?</button><button type="button">Is this area safe at night?</button></div>
+    <form class="ask" id="ask" autocomplete="off">
+      <input id="q" type="text" placeholder="Ask anything about where you are" aria-label="Message" enterkeyhint="send">
+      <button type="submit">Send</button>
+    </form>
+  </section>
+</div>
 </head>
